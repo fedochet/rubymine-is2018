@@ -60,7 +60,7 @@ class PyConstantExpression : PyInspection() {
                         PyTokenTypes.LT -> leftNum < rightNum
                         PyTokenTypes.LE -> leftNum <= rightNum
 
-                        PyTokenTypes.EQ -> leftNum == rightNum
+                        PyTokenTypes.EQEQ -> leftNum == rightNum
                         PyTokenTypes.NE -> leftNum != rightNum
 
                         else -> null
