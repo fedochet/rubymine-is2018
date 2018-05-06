@@ -36,6 +36,8 @@ class PyConstantExpression : PyInspection() {
         }
 
         companion object {
+            private val BOOL_OPERATORS = setOf(PyTokenTypes.AND_KEYWORD, PyTokenTypes.OR_KEYWORD)
+
             fun evaluateExpression(expr: PyExpression): Boolean? {
                 return when (expr) {
                     is PyBoolLiteralExpression -> expr.value
@@ -63,6 +65,17 @@ class PyConstantExpression : PyInspection() {
                         PyTokenTypes.EQEQ -> leftNum == rightNum
                         PyTokenTypes.NE -> leftNum != rightNum
 
+                        else -> null
+                    }
+                }
+
+                if (op in BOOL_OPERATORS) {
+                    val leftValue = evaluateExpression(left) ?: return null
+                    val rightValue = evaluateExpression(right) ?: return null
+
+                    return when (op) {
+                        PyTokenTypes.AND_KEYWORD -> leftValue && rightValue
+                        PyTokenTypes.OR_KEYWORD -> leftValue || rightValue
                         else -> null
                     }
                 }
