@@ -8,9 +8,6 @@ import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.inspections.PyInspectionVisitor
 import com.jetbrains.python.psi.*
 
-private typealias PyNum = PyNumericLiteralExpression
-private typealias PyBinOp = PyBinaryExpression
-
 class PyConstantExpression : PyInspection() {
 
     override fun buildVisitor(holder: ProblemsHolder,
@@ -41,7 +38,7 @@ class PyConstantExpression : PyInspection() {
             fun evaluateExpression(expr: PyExpression): Boolean? {
                 return when (expr) {
                     is PyBoolLiteralExpression -> expr.value
-                    is PyBinOp -> evalBinaryExpressionToBool(expr)
+                    is PyBinaryExpression -> evalBinaryExpressionToBool(expr)
                     is PyPrefixExpression -> evalPrefixExpression(expr)
                     else -> null
                 }
@@ -56,12 +53,12 @@ class PyConstantExpression : PyInspection() {
                 }
             }
 
-            fun evalBinaryExpressionToBool(condition: PyBinOp): Boolean? {
+            fun evalBinaryExpressionToBool(condition: PyBinaryExpression): Boolean? {
                 val left = condition.leftExpression ?: return null
                 val right = condition.rightExpression ?: return null
                 val op = condition.operator ?: return null
 
-                if (left is PyNum && right is PyNum) {
+                if (left is PyNumericLiteralExpression && right is PyNumericLiteralExpression) {
                     val leftNum = left.bigDecimalValue ?: return null
                     val rightNum = right.bigDecimalValue ?: return null
 
