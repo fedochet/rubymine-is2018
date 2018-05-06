@@ -7,6 +7,7 @@ import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.inspections.PyInspectionVisitor
 import com.jetbrains.python.psi.*
+import java.math.BigDecimal
 
 class PyConstantExpression : PyInspection() {
 
@@ -40,13 +41,13 @@ class PyConstantExpression : PyInspection() {
             fun evaluateExpression(expr: PyExpression): Boolean? {
                 return when (expr) {
                     is PyBoolLiteralExpression -> expr.value
-                    is PyBinaryExpression -> evalBinaryExpressionToBool(expr)
-                    is PyPrefixExpression -> evalPrefixExpression(expr)
+                    is PyBinaryExpression -> evaluateBinaryExpression(expr)
+                    is PyPrefixExpression -> evaluatePrefixExpression(expr)
                     else -> null
                 }
             }
 
-            private fun evalPrefixExpression(expr: PyPrefixExpression): Boolean? {
+            private fun evaluatePrefixExpression(expr: PyPrefixExpression): Boolean? {
                 val operand = expr.operand ?: return null
 
                 return when (expr.operator) {
@@ -55,7 +56,7 @@ class PyConstantExpression : PyInspection() {
                 }
             }
 
-            fun evalBinaryExpressionToBool(condition: PyBinaryExpression): Boolean? {
+            fun evaluateBinaryExpression(condition: PyBinaryExpression): Boolean? {
                 val left = condition.leftExpression ?: return null
                 val right = condition.rightExpression ?: return null
                 val op = condition.operator ?: return null
@@ -64,18 +65,7 @@ class PyConstantExpression : PyInspection() {
                     val leftNum = left.bigDecimalValue ?: return null
                     val rightNum = right.bigDecimalValue ?: return null
 
-                    return when (op) {
-                        PyTokenTypes.GT -> leftNum > rightNum
-                        PyTokenTypes.GE -> leftNum >= rightNum
-
-                        PyTokenTypes.LT -> leftNum < rightNum
-                        PyTokenTypes.LE -> leftNum <= rightNum
-
-                        PyTokenTypes.EQEQ -> leftNum == rightNum
-                        PyTokenTypes.NE -> leftNum != rightNum
-
-                        else -> null
-                    }
+                    return compareNumbers(leftNum, op, rightNum)
                 }
 
                 if (op in BOOL_OPERATORS) {
@@ -90,6 +80,21 @@ class PyConstantExpression : PyInspection() {
                 }
 
                 return null
+            }
+
+            private fun compareNumbers(leftNum: BigDecimal, op: PyElementType, rightNum: BigDecimal): Boolean? {
+                return when (op) {
+                    PyTokenTypes.GT -> leftNum > rightNum
+                    PyTokenTypes.GE -> leftNum >= rightNum
+
+                    PyTokenTypes.LT -> leftNum < rightNum
+                    PyTokenTypes.LE -> leftNum <= rightNum
+
+                    PyTokenTypes.EQEQ -> leftNum == rightNum
+                    PyTokenTypes.NE -> leftNum != rightNum
+
+                    else -> null
+                }
             }
         }
     }
