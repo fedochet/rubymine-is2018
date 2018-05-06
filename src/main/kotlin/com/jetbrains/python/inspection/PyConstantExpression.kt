@@ -29,20 +29,21 @@ class PyConstantExpression : PyInspection() {
         }
 
         private fun processIfPart(pyIfPart: PyIfPart) {
-            val condition = pyIfPart.condition
-            when (condition) {
-                is PyBoolLiteralExpression -> registerProblem(condition, "The condition is always " + condition.value)
-                is PyBinOp -> handleBinaryExpression(condition)
-            }
-        }
+            val condition = pyIfPart.condition ?: return
+            val evaledExpression = evaluateExpression(condition) ?: return
 
-        private fun handleBinaryExpression(binOp: PyBinOp) {
-            val evaledOp = evalBinaryExpressionToBool(binOp) ?: return
-
-            registerProblem(binOp, "The condition is always $evaledOp")
+            registerProblem(condition, "The condition is always $evaledExpression")
         }
 
         companion object {
+            fun evaluateExpression(expr: PyExpression): Boolean? {
+                return when (expr) {
+                    is PyBoolLiteralExpression -> expr.value
+                    is PyBinOp -> evalBinaryExpressionToBool(expr)
+                    else -> null
+                }
+            }
+
             fun evalBinaryExpressionToBool(condition: PyBinOp): Boolean? {
                 val left = condition.leftExpression ?: return null
                 val right = condition.rightExpression ?: return null
