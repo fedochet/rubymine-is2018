@@ -3,6 +3,7 @@ package com.jetbrains.python.inspection
 import com.intellij.codeInspection.LocalInspectionToolSession
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElementVisitor
+import com.jetbrains.python.PyTokenTypes
 import com.jetbrains.python.inspections.PyInspection
 import com.jetbrains.python.inspections.PyInspectionVisitor
 import com.jetbrains.python.psi.*
@@ -45,21 +46,21 @@ class PyConstantExpression : PyInspection() {
             fun evalBinaryExpressionToBool(condition: PyBinOp): Boolean? {
                 val left = condition.leftExpression ?: return null
                 val right = condition.rightExpression ?: return null
-                val op = condition.psiOperator?.text ?: return null
+                val op = condition.operator ?: return null
 
                 if (left is PyNum && right is PyNum) {
                     val leftNum = left.bigDecimalValue ?: return null
                     val rightNum = right.bigDecimalValue ?: return null
 
                     return when (op) {
-                        ">" -> leftNum > rightNum
-                        ">=" -> leftNum >= rightNum
+                        PyTokenTypes.GT -> leftNum > rightNum
+                        PyTokenTypes.GE -> leftNum >= rightNum
 
-                        "<" -> leftNum < rightNum
-                        "=<" -> leftNum <= rightNum
+                        PyTokenTypes.LT -> leftNum < rightNum
+                        PyTokenTypes.LE -> leftNum <= rightNum
 
-                        "==" -> leftNum == rightNum
-                        "!=" -> leftNum != rightNum
+                        PyTokenTypes.EQ -> leftNum == rightNum
+                        PyTokenTypes.NE -> leftNum != rightNum
 
                         else -> null
                     }
