@@ -70,12 +70,12 @@ class PyConstantExpression : PyInspection() {
                 }
 
                 if (op in BOOL_OPERATORS) {
-                    val leftValue = evaluateExpression(left) ?: return null
-                    val rightValue = evaluateExpression(right) ?: return null
+                    val leftValue = evaluateExpression(left)
+                    val rightValue = evaluateExpression(right)
 
                     return when (op) {
-                        PyTokenTypes.AND_KEYWORD -> leftValue && rightValue
-                        PyTokenTypes.OR_KEYWORD -> leftValue || rightValue
+                        PyTokenTypes.AND_KEYWORD -> fuzzyAnd(leftValue, rightValue)
+                        PyTokenTypes.OR_KEYWORD -> fyzzyOr(leftValue, rightValue)
                         else -> null
                     }
                 }
@@ -84,4 +84,16 @@ class PyConstantExpression : PyInspection() {
             }
         }
     }
+}
+
+private fun fyzzyOr(a: Boolean?, b: Boolean?): Boolean? = when {
+    a == true || b == true -> true
+    a == false && b == false -> false
+    else -> null
+}
+
+private fun fuzzyAnd(a: Boolean?, b: Boolean?): Boolean? = when {
+    a == true && b == true -> true
+    a == false || b == false -> false
+    else -> null
 }
