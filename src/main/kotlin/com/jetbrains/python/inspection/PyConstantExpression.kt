@@ -42,6 +42,16 @@ class PyConstantExpression : PyInspection() {
                 return when (expr) {
                     is PyBoolLiteralExpression -> expr.value
                     is PyBinOp -> evalBinaryExpressionToBool(expr)
+                    is PyPrefixExpression -> evalPrefixExpression(expr)
+                    else -> null
+                }
+            }
+
+            private fun evalPrefixExpression(expr: PyPrefixExpression): Boolean? {
+                val operand = expr.operand ?: return null
+
+                return when (expr.operator) {
+                    PyTokenTypes.NOT_KEYWORD -> evaluateExpression(operand)?.not()
                     else -> null
                 }
             }
