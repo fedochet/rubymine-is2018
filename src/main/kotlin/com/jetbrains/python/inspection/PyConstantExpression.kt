@@ -38,13 +38,20 @@ class PyConstantExpression : PyInspection() {
         companion object {
             private val BOOL_OPERATORS = setOf(PyTokenTypes.AND_KEYWORD, PyTokenTypes.OR_KEYWORD)
 
-            fun evaluateExpression(expr: PyExpression): Boolean? {
+            private fun evaluateExpression(expr: PyExpression): Boolean? {
                 return when (expr) {
                     is PyBoolLiteralExpression -> expr.value
                     is PyBinaryExpression -> evaluateBinaryExpression(expr)
                     is PyPrefixExpression -> evaluatePrefixExpression(expr)
+                    is PyParenthesizedExpression -> evaluateParenthesizedExpression(expr)
                     else -> null
                 }
+            }
+
+            private fun evaluateParenthesizedExpression(expr: PyParenthesizedExpression): Boolean? {
+                val body = expr.containedExpression ?: return null
+
+                return evaluateExpression(body)
             }
 
             private fun evaluatePrefixExpression(expr: PyPrefixExpression): Boolean? {
@@ -56,7 +63,7 @@ class PyConstantExpression : PyInspection() {
                 }
             }
 
-            fun evaluateBinaryExpression(condition: PyBinaryExpression): Boolean? {
+            private fun evaluateBinaryExpression(condition: PyBinaryExpression): Boolean? {
                 val left = condition.leftExpression ?: return null
                 val right = condition.rightExpression ?: return null
                 val op = condition.operator ?: return null
