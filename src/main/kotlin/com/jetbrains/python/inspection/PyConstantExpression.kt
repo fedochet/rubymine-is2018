@@ -27,9 +27,11 @@ class PyConstantExpression : PyInspection() {
 
         private fun processIfPart(pyIfPart: PyIfPart) {
             val condition = pyIfPart.condition ?: return
-            val evaluatedExpression = evaluateExpression(condition) ?: return
+            val evaluatedExpression = evaluateExpression(condition)
 
-            registerProblem(condition, "The condition is always $evaluatedExpression")
+            if (evaluatedExpression != null) {
+                registerProblem(condition, "The condition is always $evaluatedExpression")
+            }
         }
 
         companion object {
